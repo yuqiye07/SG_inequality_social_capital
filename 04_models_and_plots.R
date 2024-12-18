@@ -64,9 +64,6 @@ scale_vector <- function(x) {
 
 ## scale predictors
 
-##############################################################
-#remove code that creates counties and states
-##############################################################
 
 get_data <- function(df, tier_name=NULL){
   if (!is.null(tier_name)){
