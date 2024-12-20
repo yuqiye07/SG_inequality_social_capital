@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# Script purpose: processing survey data. 
+# Script purpose: processing survey data to obtain brand ratings.
 # -----------------------------------------------------------------------------
 
 
@@ -7,7 +7,7 @@
 library(dplyr)
 
 # read raw survey data
-ratings <- read.csv("raw_data/safegraph_brands_November_28_2022.csv")
+ratings <- read.csv("raw_data/survey_raw_data.csv")
 
 # define function to extract brand names in text
 extract_brands <- function(input_string) {
@@ -16,14 +16,16 @@ extract_brands <- function(input_string) {
   return(trimws(parts[2]))  
 }
 
-# apply function to brand columns to obtain brand names
-brand_names <- sapply(ratings[1,19:273], extract_brands)
-names(ratings)[19:273] <- brand_names
+# apply function to rating columns to obtain brand names
+brand_names <- sapply(ratings[1,15:269], extract_brands)
+names(ratings)[15:269] <- brand_names
 
 # filter responses
 ratings <- ratings %>% 
   filter(intro=="I consent to take part in this study" &
-         Progress=="100")
+         Progress=="100") %>% 
+  select(-c(1:14)) %>% # remove unnecessary columns 
+  mutate(age = as.numeric(age))
 
 # brands in two groups
 brands_group1 <- brand_names[1:127]
@@ -35,18 +37,17 @@ for (column in brand_names) {
 }
 
 
-ratings <- ratings %>% #remove unnecessary columns
-  select(-c(1:18))
 
 # participants demographics
 
 ## average age
-mean(as.numeric(ratings$age_1_TEXT),na.rm = T)
+mean(ratings$age,na.rm = T)
 
+# gender distribution
 frequency <- table(ratings$gender)
 total <- sum(frequency)  
 percentages <- (frequency / total)
-
+print(percentages)
 
 
 # separate rating data for two groups
@@ -73,7 +74,7 @@ process_ratings <- function(x) {
   ## calculate percent of empty responses
   percent_na <- sum(is.na(x)) / length(x) 
   
-  # Return a list 
+  # Return a result list 
   list(mean = mean_val, lower_ci = lower_ci, upper_ci = upper_ci, perc_na=percent_na)
 }
 

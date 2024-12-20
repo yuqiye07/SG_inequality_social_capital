@@ -7,14 +7,13 @@
 
 # packages---------------------------------------------------------------------
 
-library(MASS)
-library(dplyr)
-library(ggplot2)
-library(sandwich)
-library(reshape2)
-library(jtools)
-library(lmtest)
-library(wesanderson)
+library(MASS) # statistical analysis
+library(dplyr) # data manipulation
+library(ggplot2) # plotting
+library(sandwich) # clustered std errors
+library(lmtest)  #for estimated coefficients
+library(reshape2)# reshaping data
+library(gridExtra) #arranging multiple plots
 
 
 # import data------------------------------------------------------------------
@@ -61,17 +60,11 @@ scale_vector <- function(x) {
   as.vector(scale(x))
 }
 
-
-## scale predictors
-
-
+# filter data of a tier and scale predictors
 get_data <- function(df, tier_name=NULL){
   if (!is.null(tier_name)){
     df <- subset(df, tier == tier_name)
   }
-  df$home_county <- sprintf("%05s", as.character(df$home_county))
-  df$home_state <- substr(df$home_county, 1, 2)
-  df$home_state <- factor(df$home_state)
   
   numeric_vars <- names(df)[sapply(df, is.numeric)]
   no_scale_vars <- c('tier_visitors', 'all_visitors')
@@ -116,8 +109,7 @@ model_fitting <- function(df,
   )
   
   model <- glm.nb(formula_string,
-                  data = df_scaled,
-                  control = glm.control(maxit = 50))
+                  data = df_scaled)
   
   
   ## cluster standard errors at US state level
@@ -300,7 +292,7 @@ plot_gini <-
   labs(y = "brands tiers", 
        x = "coefficients",
        color="measure") +
-  scale_color_manual(values = wes_palette("Darjeeling1", 5, type = "discrete"))+
+  scale_color_manual(values = "red")+
   theme_classic()+
   ggtitle("a")+
   theme(legend.position.inside = c(0.93, 0.5),
@@ -318,12 +310,12 @@ plot_ortega <-
   labs(y = "brands tiers", 
        x = "coefficients",
        color="measure") +
-  scale_color_manual(values = c(wesanderson::wes_palette(n=5,"Darjeeling1")[2],
-                                wesanderson::wes_palette(n=5,"Darjeeling1")[3]),
+  scale_color_manual(values = c("#00A08A",
+                                "#F2AD00"),
                      labels = c(expression(paste("Ortega ",alpha)), expression(paste("Ortega ",gamma))))+
   theme_classic()+
   ggtitle("b")+
-  theme(legend.position = c(0.9, 0.5),
+  theme(legend.position.inside = c(0.9, 0.5),
         axis.text.y = element_text(size = 10),
         axis.text.x = element_text(size = 10),
         plot.title = element_text(face = "bold", hjust = -0.2))
@@ -417,8 +409,8 @@ results$Variable <- factor(results$Variable,
                                 levels = rev(unique(results$Variable)))
 
 # set the color for the heatmap
-color_low <- wesanderson::wes_palette(n=5,"Zissou1")[1]
-color_high <- wesanderson::wes_palette(n=5,"Zissou1")[5]
+color_low <- "#5BBCD6"
+color_high <- "red"
 
 fig2 <- 
   ggplot(results, aes(x = tier, y = Variable, fill = Coefficient)) +
