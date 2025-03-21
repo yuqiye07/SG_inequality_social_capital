@@ -1,7 +1,7 @@
 
 #-------------------------------------------------------------------------------
 # Script purpose: clean multiple datasets needed in this study.
-# Raw data sources can be found in the "Data" section of "Method" in the paper.
+# Sources for the raw data are detailed in the README file.
 #-------------------------------------------------------------------------------
 
 # load libraries
@@ -12,7 +12,7 @@ library(stringr)
 library(tidyr)
 
 
-# census data from api
+# get census data using api
 
 variables <- c("B19083_001E" = "gini",# Gini coefficient
                "S1901_C01_012E" = "income", # median income
@@ -90,10 +90,9 @@ census <- census %>%
 census <- census[complete.cases(census), ]#remove rows with NAs
 census$state <- substr(census$GEOID, 1, 2) # get FIPS code for state
 
-write.csv(census,"clean_data/df_census.csv")
 
 # JEC index data
-jec_raw <- rio::import_list('raw_data/jec_social_capital_Index.xlsx')
+jec_raw <- rio::import_list('jec_social_capital_Index.xlsx') # raw data sources can be found in the README file
 jec_raw <- jec_raw$`County Index` # select sheet
 colnames(jec_raw) <- as.character(unlist(jec_raw[1, ])) #rename columns
 jec_raw = jec_raw[-1,] # remove first row
@@ -124,11 +123,9 @@ df_jec$community_health <- as.numeric(df_jec$community_health)
 df_jec$institutional_health <- as.numeric(df_jec$institutional_health)
 df_jec$collective_efficacy <- as.numeric(df_jec$collective_efficacy)
 
-write.csv(df_jec,"clean_data/df_jec.csv")
-
 
 # Chetty's index 
-chetty <- read.csv("raw_data/social_capital_raw.csv")
+chetty <- read.csv("social_capital_raw.csv") # raw data sources can be found in the README file
 
 chetty <- chetty %>% # select columns
   select(c(county,
@@ -163,12 +160,10 @@ chetty <- merge(chetty,
 
 chetty <- chetty[complete.cases(chetty), ]
 
-write.csv(chetty,"clean_data/df_chetty_sc.csv")
-
 
 
 # Ortega data
-ortega <- read.csv("raw_data/ortega_parameter_alpha_gamma_county.csv")
+ortega <- read.csv("ortega_parameter_alpha_gamma_county.csv") # raw data sources can be found in the README file
 
 ortega <- ortega[,c("COUNTY","alpha","gamma")] # select columns
 
@@ -210,7 +205,6 @@ ortega <- merge(ortega, census[,c("GEOID","NAME_new")],
                  by.y="NAME_new")
 
 
-write.csv(ortega,"clean_data/df_ortega.csv")
 
 
 
